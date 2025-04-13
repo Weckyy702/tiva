@@ -2,14 +2,39 @@
   description = "A very basic flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "nixpkgs/release-24.11";
   };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs }: let
+    supported_systems = [
+      "x86_64-linux"
+    ];
 
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
+    for_all_systems = f: nixpkgs.lib.genAttrs supported_systems ( system: f {
+      pkgs = import nixpkgs { inherit system; };
+    });
+  in
+    {
+    devShells = for_all_systems ({ pkgs }: {
+      default = pkgs.mkShellNoCC {
+        packages = with pkgs; [
+          gcc-arm-embedded-13
+        ];
+      };
+    });
 
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-
+    packages = for_all_systems ({ pkgs }: {
+      firmware = pkgs.stdenv.mkDerivation {
+        name = "firmware";
+        src = ./.;
+        buildInputs = with pkgs; [
+          gcc-arm-embedded-13
+        ];
+        installPhase = ''
+          mkdir -p $out/bin
+          cp firmware.bin $out/bin
+        '';
+      };
+    });
   };
 }

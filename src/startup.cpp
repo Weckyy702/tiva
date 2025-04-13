@@ -1,5 +1,6 @@
 extern "C" {
-[[noreturn]] void _start() {
+[[gnu::used]] [[noreturn]] void _start() {
+  float crash = 3.1415;
   for (;;)
     ;
 }

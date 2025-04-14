@@ -1,21 +1,25 @@
-PREFIX ?= arm-none-eabi-
+ARCHPREFIX ?= arm-none-eabi-
 BUILDDIR ?= build
 BIN ?= firmware.elf
 IMG ?= firmware.bin
 LINKERSCRIPT ?= src/default.ld
 
-CC = $(PREFIX)gcc
-CXX = $(PREFIX)g++
+CC = $(ARCHPREFIX)gcc
+CXX = $(ARCHPREFIX)g++
+OBJCOPY = $(ARCHPREFIX)objcopy
 
 # Disable floating point instructions for now
 CFLAGS = -mcpu=cortex-m4+nofp -mthumb
 CFLAGS += -O0
-CFLAGS += -fno-common -ffreestanding -ffunction-sections
+CFLAGS += -fno-common -ffreestanding -ffunction-sections -fdata-sections
 CFLAGS += -Wall -Wextra -Wpedantic
 CFLAGS += -ggdb
 CFLAGS += -nostartfiles
 
 CXXFLAGS += -fno-exceptions
+CXXFLAGS += -std=c++23
+
+CPPFLAGS += -Iinclude -MD -MP
 
 LDFLAGS = $(CFLAGS) -T $(LINKERSCRIPT) -Xlinker --gc-sections --specs=nosys.specs
 
@@ -25,7 +29,7 @@ DEPS := $(OBJS:.o=.d)
 
 
 $(IMG): $(BIN)
-	$(PREFIX)objcopy -Obinary $< $@
+	$(OBJCOPY) -Obinary $< $@
 
 $(BIN): $(OBJS) $(LINKERSCRIPT)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
@@ -41,6 +45,12 @@ img: $(IMG)
 firmware: $(BIN)
 
 clean:
-	rm -f $(BIN) $(OBJS)
+	rm -f $(IMG) $(BIN) $(OBJS)
 
-.PHONY: all clean firmware
+install: all
+	mkdir -p $(PREFIX)/bin 
+	cp $(IMG) $(BIN) $(PREFIX)/bin/
+
+.PHONY: all clean install firmware img
+
+-include $(shell find $(BUILDDIR) -name '*.d')

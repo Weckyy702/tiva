@@ -19,6 +19,7 @@
       default = pkgs.mkShellNoCC {
         packages = with pkgs; [
           gcc-arm-embedded-13
+          bear
         ];
       };
     });
@@ -31,8 +32,7 @@
           gcc-arm-embedded-13
         ];
         installPhase = ''
-          mkdir -p $out/bin
-          cp firmware.bin $out/bin
+          PREFIX="$out" make install
         '';
       };
     });

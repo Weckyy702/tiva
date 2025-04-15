@@ -1,4 +1,4 @@
-ENTRY(reset_handler)
+ENTRY(handle_reset)
 
 __stack_top = 0x20000000 + 0x8000;
 
@@ -20,6 +20,18 @@ SECTIONS {
     . = ALIGN(4);
     __etext = .;
   } >ROM
+
+  .rodata : {
+    *(.rodata)
+    *(.rodata.*)
+  }
+
+  .data : {
+    . = ALIGN(4);
+    *(.data)
+    *(.data.*)
+  } > RAM AT >ROM
+
 
   /DISCARD/ : {
 

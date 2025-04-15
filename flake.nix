@@ -20,6 +20,7 @@
         packages = with pkgs; [
           gcc-arm-embedded-13
           bear
+          openocd
         ];
       };
     });

@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAKE_ISR(name) extern "C" [[gnu::interrupt]] void handle_##name(void);
+#define MAKE_ISR(name) extern "C" void handle_##name(void);
 
 #define FOR_EACH_SYSEXCEPT(X)                                                  \
   X(reset)                                                                     \

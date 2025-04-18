@@ -18,20 +18,7 @@ SECTIONS {
     *(.text.*)
 
     . = ALIGN(4);
-    __etext = .;
   } >ROM
-
-  .rodata : {
-    *(.rodata)
-    *(.rodata.*)
-  }
-
-  .data : {
-    . = ALIGN(4);
-    *(.data)
-    *(.data.*)
-  } > RAM AT >ROM
-
 
   /DISCARD/ : {
 

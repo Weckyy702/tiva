@@ -1,3 +1,4 @@
+#include "core/ints.hpp"
 #include "irqs.hpp"
 
 using IRQHandler = void (*)(void);
@@ -25,9 +26,8 @@ extern __LinkerSymbol __stack_top;
 
 extern "C" {
 
-ResetVector const constinit reset_vector
-    [[gnu::section(".vector"), gnu::used]] = {
-        .initial_sp = &__stack_top,
-        .reset_handler = handle_reset,
+ResetVector const reset_vector [[gnu::section(".vector"), gnu::used]] = {
+    .initial_sp = &__stack_top,
+    .reset_handler = handle_reset,
 };
 }

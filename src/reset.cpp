@@ -1,9 +1,14 @@
+#include "irqs.hpp"
+
 extern "C" {
 
-volatile int x = 12;
+[[gnu::target("thumb")]] void handle_reset() {
 
-void handle_reset() {
-  x += 1;
+  ///
+  /// PF1 = Red
+  /// PF2 = Blue
+  /// PF3 = Green
+
   for (;;)
     ;
 }

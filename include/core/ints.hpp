@@ -2,6 +2,9 @@
 
 #define _MAKE_INT(sign, n, original_type)                                      \
   using sign##n = original_type;                                               \
+  constexpr auto operator""_##sign##n(unsigned long long int x) {              \
+    return static_cast<original_type>(x);                                      \
+  }                                                                            \
   static_assert(sizeof(original_type) * 8 == n)
 
 #define MAKE_INT(n, original_type)                                             \
@@ -15,5 +18,12 @@ MAKE_INT(64, long long int);
 
 using isize = i32;
 static_assert(sizeof(void *) == sizeof(isize));
+constexpr auto operator""_isize(unsigned long long int x) {
+  return static_cast<isize>(x);
+}
+
 using usize = u32;
 static_assert(sizeof(void *) == sizeof(isize));
+constexpr auto operator""_usize(unsigned long long int x) {
+  return static_cast<usize>(x);
+}

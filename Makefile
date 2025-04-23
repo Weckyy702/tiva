@@ -1,46 +1,40 @@
 ARCHPREFIX ?= arm-none-eabi-
-BUILDDIR ?= build
-BIN ?= firmware.elf
-IMG ?= firmware.bin
+BUILDDIR ?= build/
+BIN ?= $(BUILDDIR)firmware.elf
 LINKERSCRIPT ?= src/default.ld
 
 CC = $(ARCHPREFIX)gcc
 CXX = $(ARCHPREFIX)g++
-OBJCOPY = $(ARCHPREFIX)objcopy
 
 # Disable floating point instructions for now
-CFLAGS = -mcpu=cortex-m4+nofp -mthumb
-CFLAGS += -O0
+CFLAGS = -mcpu=cortex-m4+nofp -mthumb 
+CFLAGS += -Og
 CFLAGS += -fno-common -ffreestanding -ffunction-sections -fdata-sections
-CFLAGS += -Wall -Wextra -Wpedantic
+CFLAGS += -Wall -Wextra -Wpedantic -Werror -Wno-error=pedantic
 CFLAGS += -ggdb
 CFLAGS += -nostartfiles
 
+CXXFLAGS = $(CFLAGS)
 CXXFLAGS += -fno-exceptions
-CXXFLAGS += -std=c++23
+CXXFLAGS += -std=gnu++23
 
 CPPFLAGS += -Iinclude -MD -MP
 
 LDFLAGS = $(CFLAGS) -T $(LINKERSCRIPT) -Xlinker --gc-sections --specs=nosys.specs
 
 SRCS := $(shell find src -name '*.c' -o -name '*.cpp')
-OBJS := $(SRCS:%=$(BUILDDIR)/%.o)
+OBJS := $(SRCS:%=$(BUILDDIR)%.o)
 DEPS := $(OBJS:.o=.d)
-
-
-$(IMG): $(BIN)
-	$(OBJCOPY) -Obinary $< $@
 
 $(BIN): $(OBJS) $(LINKERSCRIPT)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 
-$(BUILDDIR)/%.cpp.o: %.cpp Makefile
+$(BUILDDIR)%.cpp.o: %.cpp Makefile
 	mkdir -p $(dir $@)
 	$(CXX) -c $< -o $@ $(CXXFLAGS) $(CPPFLAGS)
 
-all: img
-
-img: $(IMG)
+upload: $(BIN)
+	openocd -f openocd.cfg -c "program $(BIN)" -c "verify_image $(BIN)" -c "shutdown"
 
 firmware: $(BIN)
 
@@ -49,8 +43,8 @@ clean:
 
 install: all
 	mkdir -p $(PREFIX)/bin 
-	cp $(IMG) $(BIN) $(PREFIX)/bin/
+	cp $(BIN) $(PREFIX)/bin/
 
-.PHONY: all clean install firmware img
+.PHONY: all clean install firmware upload
 
 -include $(shell find $(BUILDDIR) -name '*.d')
